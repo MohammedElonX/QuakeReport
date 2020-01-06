@@ -3,12 +3,11 @@ package com.example.quakealert;
 import android.annotation.SuppressLint;
 import android.app.usage.UsageEvents;
 import android.arch.lifecycle.Lifecycle;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.EventLog;
 import android.util.Log;
-import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.widget.ListView;
 import org.json.JSONArray;
@@ -22,9 +21,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 
 public class EarthQuakeActivity extends AppCompatActivity {
 
@@ -40,7 +39,7 @@ public class EarthQuakeActivity extends AppCompatActivity {
         earthquakeAsyncTask.execute(REQUEST_URL);
     }
 
-    private void updateUi(ArrayList<Earthquake> earthquakes){
+    private void updateUi(List<Earthquake> earthquakes){
 
         EarthquakeAdapter earthquakeAdapter = new EarthquakeAdapter(this, earthquakes);
 
@@ -49,10 +48,10 @@ public class EarthQuakeActivity extends AppCompatActivity {
         earthquakeListView.setAdapter(earthquakeAdapter);
     }
 
-    private static class EarthquakeAsyncTask extends AsyncTask <String, Void, String>{
+    private class EarthquakeAsyncTask extends AsyncTask <String, Void, List<Earthquake>>{
 
         @Override
-        protected String doInBackground(String... urls) {
+        protected List<Earthquake> doInBackground(String... urls) {
             //Make Url object on API
             URL url = createUrl(urls[0]);
 
@@ -63,13 +62,13 @@ public class EarthQuakeActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return Json;
+            return extractEarthquakes(Json);
         }
 
         @Override
-        protected void onPostExecute(String s) {
+        protected void onPostExecute(List<Earthquake> s) {
             if(s == null){return;}
-            updateUi(extractEarthquakes(s));
+            updateUi(s);
         }
 
         private String makeHTTPrequest(URL url) throws IOException {
