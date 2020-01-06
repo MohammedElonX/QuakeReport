@@ -1,9 +1,12 @@
 package com.example.quakealert;
 
 import android.annotation.SuppressLint;
+import android.app.usage.UsageEvents;
+import android.arch.lifecycle.Lifecycle;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.EventLog;
 import android.util.Log;
 import android.util.StringBuilderPrinter;
 import android.view.View;
@@ -25,76 +28,74 @@ import java.util.ArrayList;
 
 public class EarthQuakeActivity extends AppCompatActivity {
 
-    private static final String REQUEST_URL = "1";
+    private static final String REQUEST_URL =
+            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2012-01-01&endtime=2012-12-01&minmagnitude=6";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_earthquake);
 
-        ArrayList<Earthquake> earthquakes;
+        EarthquakeAsyncTask earthquakeAsyncTask = new EarthquakeAsyncTask();
+        earthquakeAsyncTask.execute(REQUEST_URL);
+    }
 
-        EarthquakeAdapter earthquakeAdapter = EarthquakeAsyncTask.execute();
+    private void updateUi(ArrayList<Earthquake> earthquakes){
+
+        EarthquakeAdapter earthquakeAdapter = new EarthquakeAdapter(this, earthquakes);
 
         ListView earthquakeListView = findViewById(R.id.earthquake_list);
 
         earthquakeListView.setAdapter(earthquakeAdapter);
     }
 
-    private class EarthquakeAsyncTask extends AsyncTask <URL, Void, String>{
+    private static class EarthquakeAsyncTask extends AsyncTask <String, Void, String>{
 
-        public ArrayList<Earthquake> extractEarthquakes(){
-            ArrayList<Earthquake> earthquakes = new ArrayList<>();
+        @Override
+        protected String doInBackground(String... urls) {
+            //Make Url object on API
+            URL url = createUrl(urls[0]);
 
-            try{
-                JSONObject jsonResponse = new JSONObject(SAMPLE_JSON);
-                JSONArray earthquakeArray = jsonResponse.getJSONArray("features");
-
-                for(int i = 0; i<earthquakeArray.length(); i++){
-                    JSONObject currentEarthquake = earthquakeArray.getJSONObject(i);
-                    JSONObject properties = currentEarthquake.getJSONObject("properties");
-
-                    String mag = properties.getString("mag");
-                    String location = properties.getString("place");
-                    String date = properties.getString("time");
-
-                    //
-                    // Earthquake earthQuake = new Earthquake(mag, location, date);
-                    //earthquakes.add(earthQuake);
-                }
-            } catch (JSONException e) {
-                Log.e("Error", "No data available", e);
+            //Make HTTP Request to receive JSON
+            String Json = "";
+            try {
+                Json = makeHTTPrequest(url);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-
-            return earthquakes;
+            return Json;
         }
 
         @Override
-        protected String doInBackground(URL... urls) {
-            //Make Url object on API
-            URL url = createUrl(REQUEST_URL);
-
-            //Make HTTP Request to recieve JSON
-            String Json = "";
-            Json = makeHTTPrequest(url);
-            return null;
+        protected void onPostExecute(String s) {
+            if(s == null){return;}
+            updateUi(extractEarthquakes(s));
         }
 
-        private String makeHTTPrequest(URL url){
+        private String makeHTTPrequest(URL url) throws IOException {
             String JsonRequest = "";
-            HttpURLConnection httpURLConnection = null;
+            HttpURLConnection urlConnection = null;
             InputStream inputStream = null;
             try {
-                URLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setReadTimeout(10000);
                 urlConnection.setConnectTimeout(15000);
+                urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
                 inputStream = urlConnection.getInputStream();
                 JsonRequest = readFromStream(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                if(inputStream != null){
+                    inputStream.close();
+                }
+                if (urlConnection != null){
+                    urlConnection.disconnect();
+                }
             }
+
+            return JsonRequest;
         }
 
         private String readFromStream(InputStream inputStream) throws IOException {
@@ -119,6 +120,30 @@ public class EarthQuakeActivity extends AppCompatActivity {
                 Log.e("Crearte Url", "Error!!!", e);
             }
             return Url;
+        }
+
+        private ArrayList<Earthquake> extractEarthquakes(String s){
+            ArrayList<Earthquake> earthquakes = new ArrayList<>();
+
+            try{
+                JSONObject jsonResponse = new JSONObject(s);
+                JSONArray earthquakeArray = jsonResponse.getJSONArray("features");
+
+                for(int i = 0; i<earthquakeArray.length(); i++){
+                    JSONObject currentEarthquake = earthquakeArray.getJSONObject(i);
+                    JSONObject properties = currentEarthquake.getJSONObject("properties");
+
+                    String mag = properties.getString("mag");
+                    String location = properties.getString("place");
+                    String date = properties.getString("time");
+
+                    Earthquake earthQuake = new Earthquake(mag, location, date);
+                    earthquakes.add(earthQuake);
+                }
+            } catch (JSONException e) {
+                Log.e("Error", "No data available", e);
+            }
+            return earthquakes;
         }
     }
 }
