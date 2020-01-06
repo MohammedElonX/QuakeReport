@@ -1,15 +1,12 @@
 package com.example.quakealert;
 
-import android.annotation.SuppressLint;
-import android.app.usage.UsageEvents;
-import android.arch.lifecycle.Lifecycle;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,7 +64,9 @@ public class EarthQuakeActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<Earthquake> s) {
-            if(s == null){return;}
+            if(s == null){
+                Toast.makeText(EarthQuakeActivity.this, "No data Available", Toast.LENGTH_LONG).show();
+                return;}
             updateUi(s);
         }
 

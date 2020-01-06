@@ -3,24 +3,30 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:padding="16dp">
+              android:padding="5dp">
 
     <TextView android:layout_width="0dp"
               android:layout_height="wrap_content"
               android:layout_weight="1"
               tools:text = "9.0"
-              android:id="@+id/magnitude"/>
+              android:id="@+id/magnitude"
+              android:textColor="@android:color/black"
+              android:textStyle="bold"
+              android:layout_margin="5dp"/>
 
     <TextView android:layout_width="0dp"
               android:layout_height="wrap_content"
               android:layout_weight="1"
               tools:text = "London"
-              android:id="@+id/location"/>
+              android:id="@+id/location"
+              android:textStyle="italic"
+    android:layout_margin="5dp"/>
 
     <TextView android:layout_width="0dp"
               android:layout_height="wrap_content"
               android:layout_weight="1"
               tools:text = "2-12-2020"
-              android:id="@+id/date"/>
+              android:id="@+id/date"
+              android:layout_margin="5dp"/>
 
 </LinearLayout>
