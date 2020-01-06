@@ -25,7 +25,7 @@ import java.util.List;
 public class EarthQuakeActivity extends AppCompatActivity {
 
     private static final String REQUEST_URL =
-            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2012-01-01&endtime=2012-12-01&minmagnitude=6";
+            "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2019-01-01&endtime=2019-12-01&minmagnitude=6";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
