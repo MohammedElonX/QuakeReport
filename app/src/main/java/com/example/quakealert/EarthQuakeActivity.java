@@ -19,7 +19,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class EarthQuakeActivity extends AppCompatActivity {
@@ -133,7 +135,12 @@ public class EarthQuakeActivity extends AppCompatActivity {
 
                     String mag = properties.getString("mag");
                     String location = properties.getString("place");
-                    String date = properties.getString("time");
+
+                    String datex = properties.getString("time");
+                    //Convert String to Long
+                    long dateLong = Long.parseLong(datex);
+                    //Use date formatter
+                    String date = getDateT(dateLong, "dd/MM/yyyy hh:mm:ss.SSS");
 
                     Earthquake earthQuake = new Earthquake(mag, location, date);
                     earthquakes.add(earthQuake);
@@ -142,6 +149,17 @@ public class EarthQuakeActivity extends AppCompatActivity {
                 Log.e("Error", "No data available", e);
             }
             return earthquakes;
+        }
+
+        private String getDateT(long milliSeconds, String dateFormat)
+        {
+            // Create a DateFormatter object for displaying date in specified format.
+            SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+
+            // Create a calendar object that will convert the date and time value in milliseconds to date.
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(milliSeconds);
+            return formatter.format(calendar.getTime());
         }
     }
 }
